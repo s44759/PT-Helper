@@ -8,11 +8,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.util.Arrays;
-import java.util.Random;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DownUtils {
+
+    public static String COOKIE = null;
 
     public static String getCookie(String port, String username, String password) {
         String cookie = null;
@@ -48,7 +50,7 @@ public class DownUtils {
         return cookie;
     }
 
-    public static boolean addTor(String port, String urls, String cookie, String savepath, String lmCookie) {
+    public static boolean addTor(String port, String urls, String savepath, String ptCookie) {
 //        String boundary = "--------------------------" + getCharAndNumr(24);
         String boundary = "----WebKitFormBoundarymxmyBmcN2OArwOQ7";
         String boundary2 = "--" + boundary;
@@ -71,7 +73,7 @@ public class DownUtils {
         param += boundary2 + "\r\n";
         param += "Content-Disposition: form-data; name=\"cookie\"\r\n\r\n";
 
-        param += lmCookie + "\r\n";
+        param += ptCookie + "\r\n";
         param += boundary2 + "\r\n";
         param += "Content-Disposition: form-data; name=\"rename\"\r\n\r\n\r\n";
 
@@ -90,7 +92,7 @@ public class DownUtils {
 
         HttpPost httpPost = new HttpPost("http://localhost:" + port + "/api/v2/torrents/add");
 
-        httpPost.addHeader("Cookie", cookie);
+        httpPost.addHeader("Cookie", COOKIE);
         httpPost.addHeader("Content-Type", "multipart/form-data; boundary=" + boundary);
 
         httpPost.setEntity(new StringEntity(param, "UTF-8"));
@@ -104,9 +106,7 @@ public class DownUtils {
         try {
             response = httpClient.execute(httpPost);
             result = EntityUtils.toString(response.getEntity());
-            System.out.println(result);
         } catch (Exception e) {
-            System.out.println(e);
         }
 
         if (result.contains("Ok.")) {
@@ -116,7 +116,7 @@ public class DownUtils {
         return false;
     }
 
-    private static String getCharAndNumr(int length) {
+    /*private static String getCharAndNumr(int length) {
 
         Random random = new Random();
 
@@ -137,6 +137,21 @@ public class DownUtils {
 
         return valSb.toString();
 
+    }*/
+
+    /**
+     * 判断种子的属性是否符合自动下载新种的用户定义属性
+     * @param list
+     * @param activity
+     * @return
+     */
+    public static boolean conformRule(List<String> list, String activity){
+        for (String s : list) {
+            if (!activity.contains(s)){
+                return false;
+            }
+        }
+        return true;
     }
 
 }

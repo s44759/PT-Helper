@@ -13,13 +13,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 @Slf4j
 public class LmNotice {
 
     private static final String FORMATPATTERN = "yyyy-MM-dd HH:mm:ss";
+
+    public static List<String> RULE = null;
 
     public void lmNotice() {
 
@@ -71,10 +75,13 @@ public class LmNotice {
         }
 
         //是否开启win10通知
-        String winInfo = downProperties.getProperty("winInfo");
+        String winInfo = downProperties.getProperty("lm.winInfo");
 
         //是否开启自动下载免费种
-        String down = downProperties.getProperty("down");
+        String down = downProperties.getProperty("lm.down");
+
+        //自动下载种子的规则
+        String rule = downProperties.getProperty("lm.down.rule");
 
         //qb的端口
         String port = downProperties.getProperty("port");
@@ -94,22 +101,31 @@ public class LmNotice {
         //qb的cookie
         String qbCookie = "";
 
-        if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
-            System.out.println("种子下载所需要配置的qBittorrent用户名或密码为空，关闭自动下载免费种");
-            down = "0";
-        } else if (StringUtils.isBlank(port)) {
-            System.out.println("种子下载所需要配置的qBittorrent端口为空，关闭自动下载免费种");
-            down = "0";
-        } else if (StringUtils.isBlank(savePath)) {
-            System.out.println("种子下载所需要配置的下载目录为空，关闭自动下载免费种");
-            down = "0";
-        } else if ("1".equals(down)) {
-            qbCookie = DownUtils.getCookie(port, username, password);
-            if (StringUtils.isBlank(qbCookie)) {
-                System.out.println("请检查qBittorrent的用户名和密码,无法获取cookie，关闭自动下载免费种");
+        if (StringUtils.isBlank(qbCookie)) {
+            if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
+                System.out.println("种子下载所需要配置的qBittorrent用户名或密码为空，关闭自动下载免费种");
                 down = "0";
+            } else if (StringUtils.isBlank(port)) {
+                System.out.println("种子下载所需要配置的qBittorrent端口为空，关闭自动下载免费种");
+                down = "0";
+            } else if (StringUtils.isBlank(savePath)) {
+                System.out.println("种子下载所需要配置的下载目录为空，关闭自动下载免费种");
+                down = "0";
+            } else if ("1".equals(down)) {
+                qbCookie = DownUtils.getCookie(port, username, password);
+                if (StringUtils.isBlank(qbCookie)) {
+                    System.out.println("请检查qBittorrent的用户名和密码,无法获取cookie，关闭自动下载免费种");
+                    down = "0";
+                } else {
+                    DownUtils.COOKIE = qbCookie;
+                }
             }
         }
+
+        if (StringUtils.isNotBlank(rule)) {
+            RULE = Arrays.asList(rule.split("\\*"));
+        }
+
 
         //如果网址为空,则设置为默认值
         if (StringUtils.isBlank(uri)) {
@@ -183,9 +199,9 @@ public class LmNotice {
                 if ("1".equals(winInfo) && !"1".equals(down)) {
                     findNum = LmUtils.findNewTorrent(num, lmPageBef, lmPageAft, sleepTime, simpleDateFormat);
                 } else if ("1".equals(winInfo) && "1".equals(down)) {
-                    findNum = LmUtils.findNewTorrentAndDownAndInfo(num, lmPageBef, lmPageAft, sleepTime, simpleDateFormat, port, savePath, cookie, qbCookie);
+                    findNum = LmUtils.findNewTorrentAndDownAndInfo(num, lmPageBef, lmPageAft, sleepTime, simpleDateFormat, port, savePath, cookie);
                 } else if (!"1".equals(winInfo) && "1".equals(down)) {
-                    findNum = LmUtils.findNewTorrentAndDown(num, lmPageBef, lmPageAft, sleepTime, simpleDateFormat, port, savePath, cookie, qbCookie);
+                    findNum = LmUtils.findNewTorrentAndDown(num, lmPageBef, lmPageAft, sleepTime, simpleDateFormat, port, savePath, cookie);
                 } else {
                     findNum = LmUtils.findNewTorrentWithOut(num, lmPageBef, lmPageAft, sleepTime, simpleDateFormat);
                 }

@@ -1,5 +1,6 @@
 package cn.nkym.pt.utils;
 
+import cn.nkym.pt.notice.MtNotice;
 import cn.nkym.pt.pojo.MtPage;
 import cn.nkym.pt.pojo.MtTorr;
 import cn.nkym.pt.window.WindowInfo;
@@ -97,7 +98,6 @@ public class MtUtils {
                 return mtPage;
             }
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("馒头查询种子页面出错", e);
         }
         return null;
@@ -194,6 +194,28 @@ public class MtUtils {
         return mt;
     }
 
+//    /**
+//     * 对比新旧页面种子数据,获取新发布的种子信息，打印到控制台和发布到win10通知,最后返回本次对比发现的新种子数量
+//     * @param num
+//     * @param bef
+//     * @param aft
+//     * @param sleepTime
+//     * @param simpleDateFormat
+//     * @return
+//    public static int findNewTorrent(int num, MtPage bef, MtPage aft, int sleepTime, DateFormat simpleDateFormat) {
+//        int findNum = 0;
+//        for (int index = 0, count = 0; index < aft.getTotalNum(); index++) {
+//            if ((!bef.getMtTorrs().get(index - count).getId().equals(aft.getMtTorrs().get(index).getId())) && ((new Date().getTime() - aft.getMtTorrs().get(index).getTime().getTime()) < (sleepTime * 1.5 * 1000))) {
+//                System.out.println("[馒头]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getMtTorrs().get(index).getActivity()) ? "" : aft.getMtTorrs().get(index).getActivity()) + aft.getMtTorrs().get(index).getTitleContext() + "\t" + aft.getMtTorrs().get(index).getSize() + "\t" + "https://pt.m-team.cc/details.php?id=" + aft.getMtTorrs().get(index).getId() + "&hit=1\t" + "https://pt.m-team.cc/download.php?id=" + aft.getMtTorrs().get(index).getId() + "&https=1");
+//                WindowInfo.showInfo("[馒头]" + (StringUtils.isBlank(aft.getMtTorrs().get(index).getActivity()) ? "" : aft.getMtTorrs().get(index).getActivity()) + aft.getMtTorrs().get(index).getTitle(), aft.getMtTorrs().get(index).getSize());
+//                count++;
+//                findNum++;
+//            }
+//        }
+//        return findNum;
+//    }*/
+
+
     /**
      * 对比新旧页面种子数据,获取新发布的种子信息，打印到控制台和发布到win10通知,最后返回本次对比发现的新种子数量
      * @param num
@@ -207,13 +229,69 @@ public class MtUtils {
         int findNum = 0;
         for (int index = 0, count = 0; index < aft.getTotalNum(); index++) {
             if ((!bef.getMtTorrs().get(index - count).getId().equals(aft.getMtTorrs().get(index).getId())) && ((new Date().getTime() - aft.getMtTorrs().get(index).getTime().getTime()) < (sleepTime * 1.5 * 1000))) {
-                System.out.println("[馒头]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getMtTorrs().get(index).getActivity()) ? "" : aft.getMtTorrs().get(index).getActivity()) + aft.getMtTorrs().get(index).getTitleContext() + "\t" + aft.getMtTorrs().get(index).getSize() + "\t" + "https://pt.m-team.cc/details.php?id=" + aft.getMtTorrs().get(index).getId() + "&hit=1\t" + "https://pt.m-team.cc/download.php?id=" + aft.getMtTorrs().get(index).getId() + "&https=1");
-                WindowInfo.showInfo("[馒头]" + (StringUtils.isBlank(aft.getMtTorrs().get(index).getActivity()) ? "" : aft.getMtTorrs().get(index).getActivity()) + aft.getMtTorrs().get(index).getTitle(), aft.getMtTorrs().get(index).getSize());
-                count++;
-                findNum++;
+                if (MtNotice.RULE == null || DownUtils.conformRule(MtNotice.RULE, aft.getMtTorrs().get(index).getActivity())) {
+                    System.out.println("[馒头]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getMtTorrs().get(index).getActivity()) ? "" : aft.getMtTorrs().get(index).getActivity()) + aft.getMtTorrs().get(index).getTitle() + "\t" + aft.getMtTorrs().get(index).getSize() + "\t" + "https://pt.m-team.cc/details.php?id=" + aft.getMtTorrs().get(index).getId() + "&hit=1\t" + "https://pt.m-team.cc/download.php?id=" + aft.getMtTorrs().get(index).getId());
+                    WindowInfo.showInfo("[馒头]" + (StringUtils.isBlank(aft.getMtTorrs().get(index).getActivity()) ? "" : aft.getMtTorrs().get(index).getActivity()) + aft.getMtTorrs().get(index).getTitle(), aft.getMtTorrs().get(index).getSize());
+                    count++;
+                    findNum++;
+                }
             }
         }
         return findNum;
     }
 
+    public static int findNewTorrentWithOut(int num, MtPage bef, MtPage aft, int sleepTime, DateFormat simpleDateFormat) {
+        int findNum = 0;
+        for (int index = 0, count = 0; index < aft.getTotalNum(); index++) {
+            if ((!bef.getMtTorrs().get(index - count).getId().equals(aft.getMtTorrs().get(index).getId())) && ((new Date().getTime() - aft.getMtTorrs().get(index).getTime().getTime()) < (sleepTime * 1.5 * 1000))) {
+                if (MtNotice.RULE == null || DownUtils.conformRule(MtNotice.RULE, aft.getMtTorrs().get(index).getActivity())) {
+                    System.out.println("[馒头]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getMtTorrs().get(index).getActivity()) ? "" : aft.getMtTorrs().get(index).getActivity()) + aft.getMtTorrs().get(index).getTitle() + "\t" + aft.getMtTorrs().get(index).getSize() + "\t" + "https://pt.m-team.cc/details.php?id=" + aft.getMtTorrs().get(index).getId() + "&hit=1\t" + "https://pt.m-team.cc/download.php?id=" + aft.getMtTorrs().get(index).getId());
+                    count++;
+                    findNum++;
+                }
+            }
+        }
+        return findNum;
+    }
+
+    public static int findNewTorrentAndDownAndInfo(int num, MtPage bef, MtPage aft, int sleepTime, DateFormat simpleDateFormat, String port, String savepath, String mtCookie) {
+        int findNum = 0;
+        for (int index = 0, count = 0; index < aft.getTotalNum(); index++) {
+            if ((!bef.getMtTorrs().get(index - count).getId().equals(aft.getMtTorrs().get(index).getId())) && ((new Date().getTime() - aft.getMtTorrs().get(index).getTime().getTime()) < (sleepTime * 1.5 * 1000))) {
+                if (MtNotice.RULE == null || DownUtils.conformRule(MtNotice.RULE, aft.getMtTorrs().get(index).getActivity())) {
+                    System.out.println("[馒头]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getMtTorrs().get(index).getActivity()) ? "" : aft.getMtTorrs().get(index).getActivity()) + aft.getMtTorrs().get(index).getTitle() + "\t" + aft.getMtTorrs().get(index).getSize() + "\t" + "https://pt.m-team.cc/details.php?id=" + aft.getMtTorrs().get(index).getId() + "&hit=1\t" + "https://pt.m-team.cc/download.php?id=" + aft.getMtTorrs().get(index).getId());
+                    DownUtils.addTor(port, "https://pt.m-team.cc/download.php?id=" + aft.getMtTorrs().get(index).getId(), savepath, mtCookie);
+                    WindowInfo.showInfo("[馒头]" + (StringUtils.isBlank(aft.getMtTorrs().get(index).getActivity()) ? "" : aft.getMtTorrs().get(index).getActivity()) + aft.getMtTorrs().get(index).getTitle(), aft.getMtTorrs().get(index).getSize());
+                /*System.out.println(port);
+                System.out.println("https://pt.m-team.cc/download.php?id=" + aft.getMtTorrs().get(index).getId());
+                System.out.println(qbCookie);
+                System.out.println(savepath);
+                System.out.println(mtCookie);*/
+                    count++;
+                    findNum++;
+                }
+            }
+        }
+        return findNum;
+    }
+
+    public static int findNewTorrentAndDown(int num, MtPage bef, MtPage aft, int sleepTime, DateFormat simpleDateFormat, String port, String savepath, String mtCookie) {
+        int findNum = 0;
+        for (int index = 0, count = 0; index < aft.getTotalNum(); index++) {
+            if ((!bef.getMtTorrs().get(index - count).getId().equals(aft.getMtTorrs().get(index).getId())) && ((new Date().getTime() - aft.getMtTorrs().get(index).getTime().getTime()) < (sleepTime * 1.5 * 1000))) {
+                if (MtNotice.RULE == null || DownUtils.conformRule(MtNotice.RULE, aft.getMtTorrs().get(index).getActivity())) {
+                    System.out.println("[馒头]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getMtTorrs().get(index).getActivity()) ? "" : aft.getMtTorrs().get(index).getActivity()) + aft.getMtTorrs().get(index).getTitle() + "\t" + aft.getMtTorrs().get(index).getSize() + "\t" + "https://pt.m-team.cc/details.php?id=" + aft.getMtTorrs().get(index).getId() + "&hit=1\t" + "https://pt.m-team.cc/download.php?id=" + aft.getMtTorrs().get(index).getId());
+                    DownUtils.addTor(port, "https://pt.m-team.cc/download.php?id=" + aft.getMtTorrs().get(index).getId(), savepath, mtCookie);
+                /*System.out.println(port);
+                System.out.println("https://pt.m-team.cc/download.php?id=" + aft.getMtTorrs().get(index).getId());
+                System.out.println(qbCookie);
+                System.out.println(savepath);
+                System.out.println(mtCookie);*/
+                    count++;
+                    findNum++;
+                }
+            }
+        }
+        return findNum;
+    }
 }

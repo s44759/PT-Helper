@@ -12,7 +12,7 @@ public class PTApplication {
     }
 
     static void multithreading() {
-        /*new Thread(() -> {
+        new Thread(() -> {
             TBSignIn tbSignIn = new TBSignIn();
             tbSignIn.sign();
         }).start();
@@ -23,7 +23,7 @@ public class PTApplication {
         new Thread(() -> {
             MtNotice mtNotice = new MtNotice();
             mtNotice.mtnotice();
-        }).start();*/
+        }).start();
         new Thread(() -> {
             LmNotice lmNotice = new LmNotice();
             lmNotice.lmNotice();

@@ -1,5 +1,6 @@
 package cn.nkym.pt.utils;
 
+import cn.nkym.pt.notice.LmNotice;
 import cn.nkym.pt.pojo.LmPage;
 import cn.nkym.pt.pojo.LmTorr;
 import cn.nkym.pt.window.WindowInfo;
@@ -94,7 +95,7 @@ public class LmUtils {
 
                 List<LmTorr> lmTorrs = new ArrayList<>();
                 //遍历取出每个种子,得到种子列表
-                for(int i = 1; i < torrenttrs.size(); i += 2){
+                for (int i = 1; i < torrenttrs.size(); i += 2) {
                     lmTorrs.add(getLmTorr(torrenttrs.get(i)));
                 }
 
@@ -103,7 +104,6 @@ public class LmUtils {
                 return lmPage;
             }
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("柠檬查询种子页面出错", e);
         }
         return null;
@@ -211,6 +211,7 @@ public class LmUtils {
 
     /**
      * 对比新旧页面种子数据,获取新发布的种子信息，打印到控制台和发布到win10通知,最后返回本次对比发现的新种子数量
+     *
      * @param num
      * @param bef
      * @param aft
@@ -222,10 +223,12 @@ public class LmUtils {
         int findNum = 0;
         for (int index = 0, count = 0; index < aft.getTotalNum(); index++) {
             if ((!bef.getLmTorrs().get(index - count).getId().equals(aft.getLmTorrs().get(index).getId())) && ((new Date().getTime() - aft.getLmTorrs().get(index).getTime().getTime()) < (sleepTime * 1.5 * 1000))) {
-                System.out.println("[柠檬]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getLmTorrs().get(index).getActivity()) ? "" : aft.getLmTorrs().get(index).getActivity()) + aft.getLmTorrs().get(index).getTitle() + "\t" + aft.getLmTorrs().get(index).getSize() + "\t" + "https://leaguehd.com/details.php?id=" + aft.getLmTorrs().get(index).getId() + "&hit=1\t" + "https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId());
-                WindowInfo.showInfo("[柠檬]" + (StringUtils.isBlank(aft.getLmTorrs().get(index).getActivity()) ? "" : aft.getLmTorrs().get(index).getActivity()) + aft.getLmTorrs().get(index).getTitle(), aft.getLmTorrs().get(index).getSize());
-                count++;
-                findNum++;
+                if (LmNotice.RULE == null || DownUtils.conformRule(LmNotice.RULE, aft.getLmTorrs().get(index).getActivity())) {
+                    System.out.println("[柠檬]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getLmTorrs().get(index).getActivity()) ? "" : aft.getLmTorrs().get(index).getActivity()) + aft.getLmTorrs().get(index).getTitle() + "\t" + aft.getLmTorrs().get(index).getSize() + "\t" + "https://leaguehd.com/details.php?id=" + aft.getLmTorrs().get(index).getId() + "&hit=1\t" + "https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId());
+                    WindowInfo.showInfo("[柠檬]" + (StringUtils.isBlank(aft.getLmTorrs().get(index).getActivity()) ? "" : aft.getLmTorrs().get(index).getActivity()) + aft.getLmTorrs().get(index).getTitle(), aft.getLmTorrs().get(index).getSize());
+                    count++;
+                    findNum++;
+                }
             }
         }
         return findNum;
@@ -235,46 +238,52 @@ public class LmUtils {
         int findNum = 0;
         for (int index = 0, count = 0; index < aft.getTotalNum(); index++) {
             if ((!bef.getLmTorrs().get(index - count).getId().equals(aft.getLmTorrs().get(index).getId())) && ((new Date().getTime() - aft.getLmTorrs().get(index).getTime().getTime()) < (sleepTime * 1.5 * 1000))) {
-                System.out.println("[柠檬]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getLmTorrs().get(index).getActivity()) ? "" : aft.getLmTorrs().get(index).getActivity()) + aft.getLmTorrs().get(index).getTitle() + "\t" + aft.getLmTorrs().get(index).getSize() + "\t" + "https://leaguehd.com/details.php?id=" + aft.getLmTorrs().get(index).getId() + "&hit=1\t" + "https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId());
-                count++;
-                findNum++;
+                if (LmNotice.RULE == null || DownUtils.conformRule(LmNotice.RULE, aft.getLmTorrs().get(index).getActivity())) {
+                    System.out.println("[柠檬]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getLmTorrs().get(index).getActivity()) ? "" : aft.getLmTorrs().get(index).getActivity()) + aft.getLmTorrs().get(index).getTitle() + "\t" + aft.getLmTorrs().get(index).getSize() + "\t" + "https://leaguehd.com/details.php?id=" + aft.getLmTorrs().get(index).getId() + "&hit=1\t" + "https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId());
+                    count++;
+                    findNum++;
+                }
             }
         }
         return findNum;
     }
 
-    public static int findNewTorrentAndDownAndInfo(int num, LmPage bef, LmPage aft, int sleepTime, DateFormat simpleDateFormat, String port, String savepath, String lmCookie, String qbCookie) {
+    public static int findNewTorrentAndDownAndInfo(int num, LmPage bef, LmPage aft, int sleepTime, DateFormat simpleDateFormat, String port, String savepath, String lmCookie) {
         int findNum = 0;
         for (int index = 0, count = 0; index < aft.getTotalNum(); index++) {
             if ((!bef.getLmTorrs().get(index - count).getId().equals(aft.getLmTorrs().get(index).getId())) && ((new Date().getTime() - aft.getLmTorrs().get(index).getTime().getTime()) < (sleepTime * 1.5 * 1000))) {
-                System.out.println("[柠檬]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getLmTorrs().get(index).getActivity()) ? "" : aft.getLmTorrs().get(index).getActivity()) + aft.getLmTorrs().get(index).getTitle() + "\t" + aft.getLmTorrs().get(index).getSize() + "\t" + "https://leaguehd.com/details.php?id=" + aft.getLmTorrs().get(index).getId() + "&hit=1\t" + "https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId());
-                DownUtils.addTor(port, "https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId(), qbCookie, savepath, lmCookie);
-                WindowInfo.showInfo("[柠檬]" + (StringUtils.isBlank(aft.getLmTorrs().get(index).getActivity()) ? "" : aft.getLmTorrs().get(index).getActivity()) + aft.getLmTorrs().get(index).getTitle(), aft.getLmTorrs().get(index).getSize());
-                System.out.println(port);
+                if (LmNotice.RULE == null || DownUtils.conformRule(LmNotice.RULE, aft.getLmTorrs().get(index).getActivity())) {
+                    System.out.println("[柠檬]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getLmTorrs().get(index).getActivity()) ? "" : aft.getLmTorrs().get(index).getActivity()) + aft.getLmTorrs().get(index).getTitle() + "\t" + aft.getLmTorrs().get(index).getSize() + "\t" + "https://leaguehd.com/details.php?id=" + aft.getLmTorrs().get(index).getId() + "&hit=1\t" + "https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId());
+                    DownUtils.addTor(port, "https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId(), savepath, lmCookie);
+                    WindowInfo.showInfo("[柠檬]" + (StringUtils.isBlank(aft.getLmTorrs().get(index).getActivity()) ? "" : aft.getLmTorrs().get(index).getActivity()) + aft.getLmTorrs().get(index).getTitle(), aft.getLmTorrs().get(index).getSize());
+                /*System.out.println(port);
                 System.out.println("https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId());
                 System.out.println(qbCookie);
                 System.out.println(savepath);
-                System.out.println(lmCookie);
-                count++;
-                findNum++;
+                System.out.println(lmCookie);*/
+                    count++;
+                    findNum++;
+                }
             }
         }
         return findNum;
     }
 
-    public static int findNewTorrentAndDown(int num, LmPage bef, LmPage aft, int sleepTime, DateFormat simpleDateFormat, String port, String savepath, String lmCookie, String qbCookie) {
+    public static int findNewTorrentAndDown(int num, LmPage bef, LmPage aft, int sleepTime, DateFormat simpleDateFormat, String port, String savepath, String lmCookie) {
         int findNum = 0;
         for (int index = 0, count = 0; index < aft.getTotalNum(); index++) {
             if ((!bef.getLmTorrs().get(index - count).getId().equals(aft.getLmTorrs().get(index).getId())) && ((new Date().getTime() - aft.getLmTorrs().get(index).getTime().getTime()) < (sleepTime * 1.5 * 1000))) {
-                System.out.println("[柠檬]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getLmTorrs().get(index).getActivity()) ? "" : aft.getLmTorrs().get(index).getActivity()) + aft.getLmTorrs().get(index).getTitle() + "\t" + aft.getLmTorrs().get(index).getSize() + "\t" + "https://leaguehd.com/details.php?id=" + aft.getLmTorrs().get(index).getId() + "&hit=1\t" + "https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId());
-                DownUtils.addTor(port, "https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId(), qbCookie, savepath, lmCookie);
-                System.out.println(port);
+                if (LmNotice.RULE == null || DownUtils.conformRule(LmNotice.RULE, aft.getLmTorrs().get(index).getActivity())) {
+                    System.out.println("[柠檬]" + "[" + simpleDateFormat.format(new Date()) + "]" + "第" + num + "次查询,新种\t" + (StringUtils.isBlank(aft.getLmTorrs().get(index).getActivity()) ? "" : aft.getLmTorrs().get(index).getActivity()) + aft.getLmTorrs().get(index).getTitle() + "\t" + aft.getLmTorrs().get(index).getSize() + "\t" + "https://leaguehd.com/details.php?id=" + aft.getLmTorrs().get(index).getId() + "&hit=1\t" + "https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId());
+                    DownUtils.addTor(port, "https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId(), savepath, lmCookie);
+                /*System.out.println(port);
                 System.out.println("https://leaguehd.com/download.php?https=1&id=" + aft.getLmTorrs().get(index).getId());
                 System.out.println(qbCookie);
                 System.out.println(savepath);
-                System.out.println(lmCookie);
-                count++;
-                findNum++;
+                System.out.println(lmCookie);*/
+                    count++;
+                    findNum++;
+                }
             }
         }
         return findNum;
